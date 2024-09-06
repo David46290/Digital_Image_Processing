@@ -95,10 +95,13 @@ def histogram(image, channel_order='RGB', bins=50):
         plt.yticks(fontsize=12)
         plt.show()
         
+def negatives(image):
+    image_negative = -1 * ((image*255).astype(int) - 255)
+    return image_negative / 255
 
 if __name__ == '__main__':
-    img = cv2.imread('is_this_a_pigeon.jpg') 
-    # img = cv2.imread('gundam_rg_2.jpg')
+    # img = cv2.imread('is_this_a_pigeon.jpg') 
+    img = cv2.imread('gundam_rg_2.jpg')
     
     # img_fft = sfft.fft2(img)
     # img_fft = sfft.fftshift(img_fft)
@@ -110,22 +113,13 @@ if __name__ == '__main__':
     img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
     img_filtered2 = fft_kernel_conv(img_ds, std=3)
     # cv2.imshow('image',img)
-    # cv2.imshow('pooled',img_ds)
+    cv2.imshow('pooled',img_ds)
     # cv2.imshow('pooled_fft',np.real(img_fft))
     # cv2.imshow('passed',img_filtered)
-    # cv2.imshow('passed_fft', np.real(img_fft_2))
-    # cv2.imshow('convolved',img_filtered2)
-    # BGR
-    # img_fft[:, :, 2] = 0
-    # img_fft[:, :, 1] = 0
-    # test = np.fft.ifft2(img_fft)
-    # cv2.imshow('pooled_fft_processed',np.real(img_fft))
-    # cv2.imshow('pooled_processed', np.abs(np.fft.ifft2(img_fft)))
-    
-    # test = np.abs(np.fft.ifft2(img_fft))
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    # img_ds = cv2.cvtColor(img_ds, cv2.COLOR_BGR2RGB)
-    histogram(img_ds, channel_order='BGR')
+    cv2.imshow('negative',negatives(img_ds))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    # histogram(img_ds, channel_order='BGR')
     
     
