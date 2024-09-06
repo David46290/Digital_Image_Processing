@@ -71,25 +71,28 @@ def fft_kernel_conv(image, std=1):
 def histogram(image, channel_order='RGB', bins=50):
     #  be sure the channel order is R->G->B
     dimension = image.shape[2]
-    value_boundary = [-1, 256]
+    value_boundary = [0, 256]
     channel_map = {'R':'maroon', 'G':'seagreen', 'B':'royalblue'}
     channel = []
     color = []
+    
     for channel_code in channel_order:
         channel.append(channel_code)
         color.append(channel_map[channel_code])
     
-     
+    x_tick = np.arange(value_boundary[0], value_boundary[1], 15)
     for c_idx in range(dimension):
         plt.figure(figsize=(8, 5), dpi=300) 
-        counts, bins = np.histogram(image[:, :, c_idx].ravel(), bins=bins)
+        counts, bins = np.histogram((image[:, :, c_idx].ravel()*255).astype(int), bins=bins)
         plt.hist(bins[:-1], bins, weights=counts, color=color[c_idx])
         plt.yscale('log')
         plt.margins(x=0.02)
         plt.title(f'{channel[c_idx]}', fontsize=16)
         plt.grid()
-        plt.ylabel('Number', fontsize=12)
-        plt.xlabel('Pixel Value', fontsize=12)
+        plt.ylabel('Amount', fontsize=14)
+        plt.xlabel('Pixel Value', fontsize=14)
+        plt.xticks(x_tick, fontsize=12)
+        plt.yticks(fontsize=12)
         plt.show()
         
 
