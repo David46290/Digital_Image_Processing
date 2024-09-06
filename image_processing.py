@@ -30,8 +30,7 @@ def pooling(image, shrinkage):
             idx_w = idx_w + shrinkage
             idx_w_pooled = idx_w_pooled + 1
             
-    return new_image
-            
+    return new_image            
         
 def pass_filter(image, span=0.1, pass_type='low'):
     diemnsion = image.shape[2]
@@ -98,17 +97,22 @@ def histogram(image, channel_order='RGB', bins=50):
 def negatives(image):
     image_negative = -1 * ((image*255).astype(int) - 255)
     return image_negative / 255
+    
+def log_transform(image, c, is_c_function=False):
+    if not is_c_function:
+        return c * np.log(1 + image)
+    else:
+        result_of_c = c(image)
+        return result_of_c * np.log(1 + image)
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
-    img = cv2.imread('gundam_rg_2.jpg')
-    
-    # img_fft = sfft.fft2(img)
-    # img_fft = sfft.fftshift(img_fft)
+    # img = cv2.imread('gundam_rg_2.jpg')
+    img = cv2.imread('commander_quant_hg.jpg')
     img_ds = pooling(img, shrinkage=6)
-    
     img = img / 255
     img_ds = img_ds / 255
+    
     img_fft = sfft.fft2(img_ds)
     img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
     img_filtered2 = fft_kernel_conv(img_ds, std=3)
@@ -116,7 +120,8 @@ if __name__ == '__main__':
     cv2.imshow('pooled',img_ds)
     # cv2.imshow('pooled_fft',np.real(img_fft))
     # cv2.imshow('passed',img_filtered)
-    cv2.imshow('negative',negatives(img_ds))
+    cv2.imshow('negative', negatives(img_ds))
+    cv2.imshow('log', log_transform(img_ds, c=5))
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
