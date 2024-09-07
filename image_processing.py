@@ -100,10 +100,10 @@ def negatives(image):
     
 def log_transform(image, c, is_c_function=False):
     if not is_c_function:
-        return c * np.log(1 + image)
+        return np.clip(c * np.log(1 + image))
     else:
         result_of_c = c(image)
-        return result_of_c * np.log(1 + image)
+        return np.clip(result_of_c * np.log(1 + image))
 
 def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate=0.5, pass_quadrant='1234'):
     diemnsion = image.shape[2]
@@ -128,7 +128,7 @@ def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate
         
     
     image_idct = sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm)
-    return image_dct, image_idct
+    return image_dct, np.clip(image_idct, 0, 1)
 
 def edge_detect_laplace(image, direction='vert_hori'):
     if direction == 'vert_hori':
@@ -141,7 +141,7 @@ def edge_detect_laplace(image, direction='vert_hori'):
                             [1, 0, 1]])
     for c_idx in range(image.shape[2]):
         image[:, :, c_idx] = scisig.convolve2d(image[:, :, c_idx], filter_, mode='same')
-    return image
+    return np.clip(image, 0, 1)
 
 def normalize_minmax(image):
     for c_idx in range(image.shape[2]):
@@ -166,9 +166,8 @@ if __name__ == '__main__':
     
     # histogram(img_ds, channel_order='BGR')
     img_fucked_up = np.copy(img_ds)
-    img_fucked_up = contrast(img_fucked_up, value_contrast=1, value_bright=0)
-    # img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
-    # img_fucked_up = normalize_minmax(img_fucked_up)
+    # img_fucked_up = contrast(img_fucked_up, value_contrast=0.9, value_bright=0.01)
+    img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
     # img_fucked_up = log_transform(img_fucked_up, c=10)
     # _, img_fucked_up = DCT(img_fucked_up, shape_result=None, norm='ortho'
     #                         , process_type='pass', pass_quadrant='234', pass_rate=0.4)
