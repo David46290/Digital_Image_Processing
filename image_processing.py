@@ -1,6 +1,7 @@
 import cv2
 import random
 import scipy.fftpack as sfft
+import scipy.ndimage as simg
 import numpy as np
 from scipy import signal as scisig
 from matplotlib import pyplot as plt
@@ -143,15 +144,14 @@ def edge_detect_laplace(image, direction='vert_hori'):
         image[:, :, c_idx] = scisig.convolve2d(image[:, :, c_idx], filter_, mode='same')
     return np.clip(image, 0, 1)
 
-def normalize_minmax(image):
-    for c_idx in range(image.shape[2]):
-        max_ = np.amax(image[:, :, c_idx])
-        min_ = np.amin(image[:, :, c_idx])
-        image[:, :, c_idx] = (image[:, :, c_idx] - min_) / (max_ - min_)
-    return image
 
 def contrast(image, value_contrast=1, value_bright=0):
     return np.clip(value_contrast*image + value_bright, 0, 1) 
+
+def gaussian_filter(image, sigma=1, radius=1, derivative=0):
+    for c_idx in range(image.shape[2]):
+        image[:, :, c_idx] = simg.gaussian_filter(image[:, :, c_idx], sigma=sigma, radius=radius, order=derivative)
+    return np.clip(image, 0, 1)
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
@@ -167,7 +167,8 @@ if __name__ == '__main__':
     # histogram(img_ds, channel_order='BGR')
     img_fucked_up = np.copy(img_ds)
     # img_fucked_up = contrast(img_fucked_up, value_contrast=0.9, value_bright=0.01)
-    img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
+    # img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
+    img_fucked_up = gaussian_filter(img_fucked_up, sigma=7, radius=10, derivative=0)
     # img_fucked_up = log_transform(img_fucked_up, c=10)
     # _, img_fucked_up = DCT(img_fucked_up, shape_result=None, norm='ortho'
     #                         , process_type='pass', pass_quadrant='234', pass_rate=0.4)
