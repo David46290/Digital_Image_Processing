@@ -105,26 +105,56 @@ def log_transform(image, c, is_c_function=False):
         result_of_c = c(image)
         return result_of_c * np.log(1 + image)
 
+def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate=0.5, pass_quadrant='1234'):
+    diemnsion = image.shape[2]
+    image_dct = sfft.dctn(image, type=2, shape=shape_result, norm=norm)
+    
+    if process_type == 'random':
+        # randomly edit element and see what can be changed
+        image_dct = image_dct * np.random.rand(image.shape[0], image.shape[1], image.shape[2])
+    elif process_type == 'pass':
+        #[1, 2]
+        #[3, 4]
+        threshold_h = int(image.shape[0] * pass_rate)
+        threshold_w = int(image.shape[1] * pass_rate)
+        if '1' not in pass_quadrant:
+            image_dct[:threshold_h, :threshold_w, :] = 0
+        if '2' not in pass_quadrant:
+            image_dct[:threshold_h, threshold_w:image.shape[1], :] = 0
+        if '3' not in pass_quadrant:
+            image_dct[threshold_h:image.shape[0], :threshold_w, :] = 0
+        if '4' not in pass_quadrant:
+            image_dct[threshold_h:, threshold_w:, :] = 0
+        
+    
+    image_idct = sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm)
+    return image_dct, image_idct
+
 if __name__ == '__main__':
-    # img = cv2.imread('is_this_a_pigeon.jpg') 
+    img = cv2.imread('is_this_a_pigeon.jpg') 
     # img = cv2.imread('gundam_rg_2.jpg')
-    img = cv2.imread('commander_quant_hg.jpg')
+    # img = cv2.imread('commander_quant_hg.jpg')
     img_ds = pooling(img, shrinkage=6)
     img = img / 255
     img_ds = img_ds / 255
+    # img_fft = sfft.fft2(img_ds)
+    # img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
+    # img_filtered2 = fft_kernel_conv(img_ds, std=3)
     
-    img_fft = sfft.fft2(img_ds)
-    img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
-    img_filtered2 = fft_kernel_conv(img_ds, std=3)
+    # histogram(img_ds, channel_order='BGR')
+    img_dct, img_idct = DCT(img_ds, shape_result=None, norm='ortho'
+                            , process_type='pass', pass_quadrant='134')
+    
     # cv2.imshow('image',img)
     cv2.imshow('pooled',img_ds)
     # cv2.imshow('pooled_fft',np.real(img_fft))
     # cv2.imshow('passed',img_filtered)
-    cv2.imshow('negative', negatives(img_ds))
-    cv2.imshow('log', log_transform(img_ds, c=5))
+    # cv2.imshow('negative', negatives(img_ds))
+    # cv2.imshow('log', log_transform(img_ds, c=5))
+    cv2.imshow('dct_idct',img_idct)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-    # histogram(img_ds, channel_order='BGR')
+    
     
     
