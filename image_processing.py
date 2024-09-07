@@ -101,7 +101,7 @@ def negatives(image):
     
 def log_transform(image, c, is_c_function=False):
     if not is_c_function:
-        return np.clip(c * np.log(1 + image))
+        return np.clip(c * np.log(1 + image), 0, 1)
     else:
         result_of_c = c(image)
         return np.clip(result_of_c * np.log(1 + image), 0, 1)
