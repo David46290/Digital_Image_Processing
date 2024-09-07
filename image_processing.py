@@ -145,8 +145,15 @@ def edge_detect_laplace(image, direction='vert_hori'):
     return np.clip(image, 0, 1)
 
 
-def contrast(image, value_contrast=1, value_bright=0):
-    return np.clip(value_contrast*image + value_bright, 0, 1) 
+def contrast(image, value_contrast=1, value_bright=0, mode='simple', step_threshold=0.5):
+    if mode == 'simple':
+        return np.clip(value_contrast*image + value_bright, 0, 1) 
+    elif mode == 'step':
+        for h_idx in range(image.shape[0]):
+            for w_idx in range(image.shape[1]):
+                for c_idx in range(image.shape[2]):
+                    image[h_idx, w_idx, c_idx] = image[h_idx, w_idx, c_idx] * np.heaviside(image[h_idx, w_idx, c_idx]-step_threshold,
+                                                              0.5)
 
 def gaussian_filter(image, sigma=1, radius=1, derivative=0):
     for c_idx in range(image.shape[2]):
@@ -166,9 +173,9 @@ if __name__ == '__main__':
     
     # histogram(img_ds, channel_order='BGR')
     img_fucked_up = np.copy(img_ds)
-    # img_fucked_up = contrast(img_fucked_up, value_contrast=0.9, value_bright=0.01)
-    # img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
-    img_fucked_up = gaussian_filter(img_fucked_up, sigma=7, radius=10, derivative=0)
+    img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
+    img_fucked_up = contrast(img_fucked_up, value_contrast=0.9, value_bright=0.01)
+    img_fucked_up = gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
     # img_fucked_up = log_transform(img_fucked_up, c=10)
     # _, img_fucked_up = DCT(img_fucked_up, shape_result=None, norm='ortho'
     #                         , process_type='pass', pass_quadrant='234', pass_rate=0.4)
