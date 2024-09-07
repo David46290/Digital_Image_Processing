@@ -130,9 +130,23 @@ def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate
     image_idct = sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm)
     return image_dct, image_idct
 
+def edge_detect_laplace(image, direction='vert_hori'):
+    if direction == 'vert_hori':
+        filter_ = np.array([[0, 1, 0], 
+                            [1, -4, 1], 
+                            [0, 1, 0]])
+    elif direction == '45_degree':
+        filter_ = np.array([[1, 0, 1], 
+                            [0,-4, 0], 
+                            [1, 0, 1]])
+    for c_idx in range(image.shape[2]):
+        image[:, :, c_idx] = scisig.convolve2d(image[:, :, c_idx], filter_, mode='same')
+    return image
+    
+
 if __name__ == '__main__':
-    img = cv2.imread('is_this_a_pigeon.jpg') 
-    # img = cv2.imread('gundam_rg_2.jpg')
+    # img = cv2.imread('is_this_a_pigeon.jpg') 
+    img = cv2.imread('gundam_rg_2.jpg')
     # img = cv2.imread('commander_quant_hg.jpg')
     img_ds = pooling(img, shrinkage=6)
     img = img / 255
@@ -143,15 +157,23 @@ if __name__ == '__main__':
     
     # histogram(img_ds, channel_order='BGR')
     img_dct, img_idct = DCT(img_ds, shape_result=None, norm='ortho'
-                            , process_type='pass', pass_quadrant='134')
+                            , process_type='pass', pass_quadrant='234', pass_rate=0.4)
+    
+    
+    # img_fucked_up = log_transform(img_idct*0.9, c=10)
+    
+    # img_mixed = (img_ds - img_fucked_up)
     
     # cv2.imshow('image',img)
-    cv2.imshow('pooled',img_ds)
+    cv2.imshow('pooled', img_ds)
     # cv2.imshow('pooled_fft',np.real(img_fft))
     # cv2.imshow('passed',img_filtered)
     # cv2.imshow('negative', negatives(img_ds))
     # cv2.imshow('log', log_transform(img_ds, c=5))
-    cv2.imshow('dct_idct',img_idct)
+    cv2.imshow('laplace_straight', edge_detect_laplace(img_ds, direction='vert_hori'))
+    cv2.imshow('laplace_slop', edge_detect_laplace(img_ds, direction='45_degree'))
+    # cv2.imshow('random bullshit', img_fucked_up)
+    # cv2.imshow('mixed', img_mixed)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
