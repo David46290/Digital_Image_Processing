@@ -152,8 +152,14 @@ def contrast(image, value_contrast=1, value_bright=0, mode='simple', step_thresh
         for h_idx in range(image.shape[0]):
             for w_idx in range(image.shape[1]):
                 for c_idx in range(image.shape[2]):
-                    image[h_idx, w_idx, c_idx] = image[h_idx, w_idx, c_idx] * np.heaviside(image[h_idx, w_idx, c_idx]-step_threshold,
-                                                              0.5)
+                    image[h_idx, w_idx, c_idx] = image[h_idx, w_idx, c_idx] * np.heaviside(image[h_idx, w_idx, c_idx]-step_threshold, 0.5)
+        return np.clip(value_contrast*image + value_bright, 0, 1)
+    elif mode == 'sigmoid':
+        for h_idx in range(image.shape[0]):
+            for w_idx in range(image.shape[1]):
+                for c_idx in range(image.shape[2]):
+                    image[h_idx, w_idx, c_idx] = 1 / (1 + np.exp(-1*value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold)))
+        return np.clip(image + value_bright, 0, 1)
 
 def gaussian_filter(image, sigma=1, radius=1, derivative=0):
     for c_idx in range(image.shape[2]):
@@ -171,11 +177,12 @@ if __name__ == '__main__':
     # img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
     # img_filtered2 = fft_kernel_conv(img_ds, std=3)
     
-    # histogram(img_ds, channel_order='BGR')
+    histogram(img_ds, channel_order='BGR')
     img_fucked_up = np.copy(img_ds)
-    img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
-    img_fucked_up = contrast(img_fucked_up, value_contrast=0.9, value_bright=0.01)
-    img_fucked_up = gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
+    # img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
+    img_fucked_up = contrast(img_fucked_up, mode='sigmoid', value_contrast=5, step_threshold=0.5)
+    histogram(img_fucked_up, channel_order='BGR')
+    # img_fucked_up = gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
     # img_fucked_up = log_transform(img_fucked_up, c=10)
     # _, img_fucked_up = DCT(img_fucked_up, shape_result=None, norm='ortho'
     #                         , process_type='pass', pass_quadrant='234', pass_rate=0.4)
