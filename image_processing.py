@@ -104,7 +104,7 @@ def log_transform(image, c, is_c_function=False):
         return np.clip(c * np.log(1 + image))
     else:
         result_of_c = c(image)
-        return np.clip(result_of_c * np.log(1 + image))
+        return np.clip(result_of_c * np.log(1 + image), 0, 1)
 
 def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate=0.5, pass_quadrant='1234'):
     diemnsion = image.shape[2]
