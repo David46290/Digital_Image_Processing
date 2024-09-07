@@ -142,7 +142,16 @@ def edge_detect_laplace(image, direction='vert_hori'):
     for c_idx in range(image.shape[2]):
         image[:, :, c_idx] = scisig.convolve2d(image[:, :, c_idx], filter_, mode='same')
     return image
-    
+
+def normalize_minmax(image):
+    for c_idx in range(image.shape[2]):
+        max_ = np.amax(image[:, :, c_idx])
+        min_ = np.amin(image[:, :, c_idx])
+        image[:, :, c_idx] = (image[:, :, c_idx] - min_) / (max_ - min_)
+    return image
+
+def contrast(image, value_contrast=1, value_bright=0):
+    return np.clip(value_contrast*image + value_bright, 0, 1) 
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
@@ -156,13 +165,15 @@ if __name__ == '__main__':
     # img_filtered2 = fft_kernel_conv(img_ds, std=3)
     
     # histogram(img_ds, channel_order='BGR')
-    img_dct, img_idct = DCT(img_ds, shape_result=None, norm='ortho'
-                            , process_type='pass', pass_quadrant='234', pass_rate=0.4)
+    img_fucked_up = np.copy(img_ds)
+    img_fucked_up = contrast(img_fucked_up, value_contrast=1, value_bright=0)
+    # img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
+    # img_fucked_up = normalize_minmax(img_fucked_up)
+    # img_fucked_up = log_transform(img_fucked_up, c=10)
+    # _, img_fucked_up = DCT(img_fucked_up, shape_result=None, norm='ortho'
+    #                         , process_type='pass', pass_quadrant='234', pass_rate=0.4)
     
-    
-    # img_fucked_up = log_transform(img_idct*0.9, c=10)
-    
-    # img_mixed = (img_ds - img_fucked_up)
+    img_mixed = (img_ds - img_fucked_up)
     
     # cv2.imshow('image',img)
     cv2.imshow('pooled', img_ds)
@@ -170,10 +181,10 @@ if __name__ == '__main__':
     # cv2.imshow('passed',img_filtered)
     # cv2.imshow('negative', negatives(img_ds))
     # cv2.imshow('log', log_transform(img_ds, c=5))
-    cv2.imshow('laplace_straight', edge_detect_laplace(img_ds, direction='vert_hori'))
-    cv2.imshow('laplace_slop', edge_detect_laplace(img_ds, direction='45_degree'))
-    # cv2.imshow('random bullshit', img_fucked_up)
-    # cv2.imshow('mixed', img_mixed)
+    # cv2.imshow('laplace_straight', edge_detect_laplace(img_ds, direction='vert_hori'))
+    # cv2.imshow('laplace_slop', edge_detect_laplace(img_ds, direction='45_degree'))
+    cv2.imshow('random bullshit', img_fucked_up)
+    cv2.imshow('mixed', img_mixed)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
