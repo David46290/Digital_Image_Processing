@@ -53,12 +53,10 @@ def pass_filter(image, span=0.1, pass_type='low'):
         image_fft[:, threshold_w[1]:, :] = 0
     elif pass_type == 'low':
         image_fft[threshold_h[0]:threshold_h[1], threshold_w[0]:threshold_w[1], :] = 0
-        # image_fft[:, threshold_w[0]:threshold_w[1], :] = 0
     else:
         print('no assigned pass type for freq-pass')
+    image[:, :, :] = np.abs(np.fft.ifft2(image_fft))
     
-    image_filtered = np.abs(np.fft.ifft2(image_fft))
-    return image_fft , image_filtered
 
 def fft_kernel_conv(image, std=1):
     kernel = np.outer(scisig.gaussian(image.shape[0], std), scisig.gaussian(image.shape[1], std))
@@ -177,8 +175,10 @@ if __name__ == '__main__':
     # gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
     # log_transform(img_fucked_up, c=100)
     # DCT(img_fucked_up, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
+    pass_filter(img_fucked_up, span=0.9, pass_type='low')
+    # negatives(img_fucked_up)
     # histogram(img_fucked_up, channel_order='BGR')    
-    negatives(img_fucked_up)
+    
     img_mixed = np.clip(img_ds - img_fucked_up, 0, 1)
     
     # cv2.imshow('image',img)
