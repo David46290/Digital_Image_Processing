@@ -96,18 +96,15 @@ def histogram(image, channel_order='RGB', bins=50):
         plt.show()
         
 def negatives(image):
-    image_negative = -1 * ((image*255).astype(int) - 255)
-    return image_negative / 255
+    image[:, :, :] = np.clip(-1 * (image - 1), 0, 1)
+
     
-def log_transform(image, c, is_c_function=False):
-    if not is_c_function:
-        return np.clip(c * np.log(1 + image), 0, 1)
-    else:
-        result_of_c = c(image)
-        return np.clip(result_of_c * np.log(1 + image), 0, 1)
+def log_transform(image, c):
+    for c_idx in range(image.shape[2]):
+        image[:, :, c_idx] = np.clip(c * np.log(1 + image[:, :, c_idx]), 0, 1)
+
 
 def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate=0.5, pass_quadrant='1234'):
-    diemnsion = image.shape[2]
     image_dct = sfft.dctn(image, type=2, shape=shape_result, norm=norm)
     
     if process_type == 'random':
@@ -126,10 +123,7 @@ def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate
             image_dct[threshold_h:image.shape[0], :threshold_w, :] = 0
         if '4' not in pass_quadrant:
             image_dct[threshold_h:, threshold_w:, :] = 0
-        
-    
-    image_idct = sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm)
-    return image_dct, np.clip(image_idct, 0, 1)
+    image[:, :, :] = sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm)
 
 def edge_detect_laplace(image, direction='vert_hori'):
     if direction == 'vert_hori':
@@ -142,25 +136,27 @@ def edge_detect_laplace(image, direction='vert_hori'):
                             [1, 0, 1]])
     for c_idx in range(image.shape[2]):
         image[:, :, c_idx] = scisig.convolve2d(image[:, :, c_idx], filter_, mode='same')
-    return np.clip(image, 0, 1)
 
 
 def contrast(image, value_contrast=1, value_bright=0, mode='simple', step_threshold=0.5):
     if mode == 'simple':
         value_contrast = 1 + value_contrast/10
-        return np.clip(value_contrast*image + value_bright, 0, 1) 
+        for h_idx in range(image.shape[0]):
+            for w_idx in range(image.shape[1]):
+                for c_idx in range(image.shape[2]):
+                    image[h_idx, w_idx, c_idx] = np.clip(value_contrast*image[h_idx, w_idx, c_idx] + value_bright, 0, 1) 
 
     elif mode == 'sigmoid':
         for h_idx in range(image.shape[0]):
             for w_idx in range(image.shape[1]):
                 for c_idx in range(image.shape[2]):
-                    image[h_idx, w_idx, c_idx] = 1 / (1 + np.exp(-1*value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold)))
-        return np.clip(image + value_bright, 0, 1)
+                    image[h_idx, w_idx, c_idx] = np.clip(1 / (1 + np.exp(-1*value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold))), 0, 1)
+        
 
 def gaussian_filter(image, sigma=1, radius=1, derivative=0):
     for c_idx in range(image.shape[2]):
-        image[:, :, c_idx] = simg.gaussian_filter(image[:, :, c_idx], sigma=sigma, radius=radius, order=derivative)
-    return np.clip(image, 0, 1)
+        image[:, :, c_idx] = np.clip(simg.gaussian_filter(image[:, :, c_idx], sigma=sigma, radius=radius, order=derivative), 0, 1)
+
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
@@ -169,21 +165,21 @@ if __name__ == '__main__':
     img_ds = pooling(img, shrinkage=6)
     img = img / 255
     img_ds = img_ds / 255
+    # histogram(img_ds, channel_order='BGR')
     # img_fft = sfft.fft2(img_ds)
     # img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
     # img_filtered2 = fft_kernel_conv(img_ds, std=3)
     
-    histogram(img_ds, channel_order='BGR')
-    img_fucked_up = np.copy(img_ds)
-    # img_fucked_up = edge_detect_laplace(img_fucked_up, direction='45_degree')
-    img_fucked_up = contrast(img_fucked_up, mode='sigmoid', value_contrast=100, step_threshold=0.5)
-    histogram(img_fucked_up, channel_order='BGR')
-    # img_fucked_up = gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
-    # img_fucked_up = log_transform(img_fucked_up, c=10)
-    # _, img_fucked_up = DCT(img_fucked_up, shape_result=None, norm='ortho'
-    #                         , process_type='pass', pass_quadrant='234', pass_rate=0.4)
     
-    img_mixed = (img_ds - img_fucked_up)
+    img_fucked_up = np.copy(img_ds)
+    # edge_detect_laplace(img_fucked_up, direction='45_degree')
+    # contrast(img_fucked_up, mode='sigmoid', value_contrast=100, step_threshold=0.5)
+    # gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
+    # log_transform(img_fucked_up, c=100)
+    # DCT(img_fucked_up, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
+    # histogram(img_fucked_up, channel_order='BGR')    
+    negatives(img_fucked_up)
+    img_mixed = np.clip(img_ds - img_fucked_up, 0, 1)
     
     # cv2.imshow('image',img)
     cv2.imshow('pooled', img_ds)
