@@ -133,8 +133,28 @@ def edge_detect_laplace(image, direction='vert_hori'):
                             [0,-4, 0], 
                             [1, 0, 1]])
     for c_idx in range(image.shape[2]):
-        image[:, :, c_idx] = scisig.convolve2d(image[:, :, c_idx], filter_, mode='same')
+        image[:, :, c_idx] = np.clip(scisig.convolve2d(image[:, :, c_idx], filter_, mode='same'), 0, 1)
 
+def median_filter(image, window_size=3, step_size=1):
+    image_new = np.copy(image)
+    for idx_c in range(image.shape[2]):
+        idx_h = 0
+        while idx_h < image.shape[0]:
+            idx_w = 0
+            window_border_h = [max(0, idx_h-window_size), min(idx_h+window_size+1, image.shape[0]-1)]
+            while idx_w < image.shape[1]:
+                window_border_w = [max(0, idx_w-window_size), min(idx_w+window_size+1, image.shape[1]-1)]
+                image_new[idx_h, idx_w, idx_c] = np.median(np.ravel(image[window_border_h[0]:window_border_h[1],
+                                                                      window_border_w[0]:window_border_w[1],
+                                                                      idx_c]))
+                # print(np.median(np.ravel(image[window_border_h[0]:window_border_h[1],
+                #                                                       window_border_w[0]:window_border_w[1],
+                #                                                       idx_c])))
+                # test = image[window_border_h[0]:window_border_h[1],window_border_w[0]:window_border_w[1],
+                #              idx_c]
+                idx_w += step_size
+            idx_h += step_size
+    image[:, :, :] = image_new[:, :, :]
 
 def contrast(image, value_contrast=1, value_bright=0, mode='simple', step_threshold=0.5):
     if mode == 'simple':
@@ -158,8 +178,9 @@ def gaussian_filter(image, sigma=1, radius=1, derivative=0):
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
-    img = cv2.imread('gundam_rg_2.jpg')
-    # img = cv2.imread('commander_quant_hg.jpg')
+    # img = cv2.imread('gundam_rg_2.jpg')
+    img = cv2.imread('commander_quant_hg.jpg')
+    
     img_ds = pooling(img, shrinkage=6)
     img = img / 255
     img_ds = img_ds / 255
@@ -168,29 +189,32 @@ if __name__ == '__main__':
     # img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
     # img_filtered2 = fft_kernel_conv(img_ds, std=3)
     
+    # img_ds = np.array([[0, 1, 2, 3, 4, 5, 6, 7],
+    #                 [7, 6, 5, 4, 3, 2, 1, 1],
+    #                 [5, 9, 7, 2, 3, 4, 1, 0],
+    #                 [1, 3, 5, 7, 9, 7, 5, 3],
+    #                 [1, 1, 8, 1, 8, 2, 3, 4],
+    #                 [5, 9, 7, 2, 3, 4, 1, 0]]).reshape(6, 8, 1)
+    # img_ds = np.concatenate((img_ds, img_ds, img_ds), axis=2)
     
     img_fucked_up = np.copy(img_ds)
-    # edge_detect_laplace(img_fucked_up, direction='45_degree')
-    # contrast(img_fucked_up, mode='sigmoid', value_contrast=100, step_threshold=0.5)
-    # gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
-    # log_transform(img_fucked_up, c=100)
     # DCT(img_fucked_up, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
-    pass_filter(img_fucked_up, span=0.9, pass_type='low')
+    # pass_filter(img_fucked_up, span=0.9, pass_type='high')
+    edge_detect_laplace(img_fucked_up, direction='45_degree')
+    # contrast(img_fucked_up, mode='sigmoid', value_contrast=20, step_threshold=0.3)
+    # gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
+    log_transform(img_fucked_up, c=10)
+    # median_filter(img_fucked_up, window_size=3, step_size=1)
+    
     # negatives(img_fucked_up)
     # histogram(img_fucked_up, channel_order='BGR')    
     
     img_mixed = np.clip(img_ds - img_fucked_up, 0, 1)
     
     # cv2.imshow('image',img)
-    cv2.imshow('pooled', img_ds)
-    # cv2.imshow('pooled_fft',np.real(img_fft))
-    # cv2.imshow('passed',img_filtered)
-    # cv2.imshow('negative', negatives(img_ds))
-    # cv2.imshow('log', log_transform(img_ds, c=5))
-    # cv2.imshow('laplace_straight', edge_detect_laplace(img_ds, direction='vert_hori'))
-    # cv2.imshow('laplace_slop', edge_detect_laplace(img_ds, direction='45_degree'))
+    # cv2.imshow('pooled', img_ds)
     cv2.imshow('random bullshit', img_fucked_up)
-    cv2.imshow('mixed', img_mixed)
+    # cv2.imshow('mixed', img_mixed)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
