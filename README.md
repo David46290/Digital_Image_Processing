@@ -41,6 +41,8 @@ Make sure scale your image's pixel values to [0, 1] before using functions below
 
 ## pass_filter(image, span, pass_type)
 
+([Reference for fft of 2-D array](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fftpack.fft2.html "link" )) 
+
 ### A boundary box is utilized to mark the "passing area". 
 * If pass_type = 'low', then low-frequency components (outer area) are kept.
 * If pass_type = 'high', then high-frequency components (inner area) are kept.
@@ -97,6 +99,7 @@ histogram(img_ds, channel_order='BGR')
 ## DCT(image, shape_result, norm, process_type, pass_rate, pass_quadrant)
 
 ([Reference for Discrete Cosine Transformation](https://users.cs.cf.ac.uk/Dave.Marshall/Multimedia/node231.html "link" )) 
+([Reference for Discrete Cosine Transformation 2](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fftpack.dctn.html "link" )) 
 
 ### Another method to low/high-pass an image.
 
@@ -112,3 +115,5 @@ cv2.destroyAllWindows()
 ```
 
 ![dcted](images/dcted.jpg)
+
+## edge_detect_laplace(image, direction)
