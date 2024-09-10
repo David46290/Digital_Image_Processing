@@ -117,3 +117,16 @@ cv2.destroyAllWindows()
 ![dcted](images/dcted.jpg)
 
 ## edge_detect_laplace(image, direction)
+
+([Reference](https://medium.com/@wilson.linzhe/digital-image-processing-in-c-chapter-4-edge-detection-and-grayscale-transformation-laplacian-dfb8de02f213 "link" )) 
+
+```
+img_processed = np.copy(img_ds)
+edge_detect_laplace(img_processed, direction='45_degree')
+cv2.imshow('pooled', img_ds)
+cv2.imshow('processed', img_processed)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
+
+![laplaced](images/laplaced.jpg)
