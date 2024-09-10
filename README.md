@@ -79,3 +79,17 @@ cv2.destroyAllWindows()
 ```
 
 ![negative](images/negative.jpg)
+
+## log_transform(image, c)
+### new_image(x, y) = c * log(1 + image(x, y))
+```
+img_processed = np.copy(img_ds)
+log_transform(img_processed, c=2)
+cv2.imshow('pooled', img_ds)
+cv2.imshow('processed', img_processed)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+histogram(img_ds, channel_order='BGR')
+```
+![log](images/log.jpg)
+![hist_log](images/hist_log.jpg)
