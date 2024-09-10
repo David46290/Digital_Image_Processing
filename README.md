@@ -39,7 +39,7 @@ cv2.destroyAllWindows()
 Make sure scale your image's pixel values to [0, 1] before using functions below.
 </h3> 
 
-## pass_filter(image, span=0.1, pass_type='low')
+## pass_filter(image, span, pass_type)
 
 ### A boundary box is utilized to mark the "passing area". 
 * If pass_type = 'low', then low-frequency components (outer area) are kept.
@@ -62,7 +62,7 @@ cv2.destroyAllWindows()
 
 ![passed](images/passed.jpg)
 
-## histogram(image, channel_order='RGB', bins=50)
+## histogram(image, channel_order)
 ```
 histogram(img_ds, channel_order='BGR')
 ```
@@ -93,3 +93,22 @@ histogram(img_ds, channel_order='BGR')
 ```
 ![log](images/log.jpg)
 ![hist_log](images/hist_log.jpg)
+
+## DCT(image, shape_result, norm, process_type, pass_rate, pass_quadrant)
+
+([Reference for Discrete Cosine Transformation](https://users.cs.cf.ac.uk/Dave.Marshall/Multimedia/node231.html "link" )) 
+
+### Another method to low/high-pass an image.
+
+![dct](images/dct.jpg)
+
+```
+img_processed = np.copy(img_ds)
+DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
+cv2.imshow('pooled', img_ds)
+cv2.imshow('processed', img_processed)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
+
+![dcted](images/dcted.jpg)
