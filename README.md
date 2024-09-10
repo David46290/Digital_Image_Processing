@@ -100,7 +100,7 @@ histogram(img_ds, channel_order='BGR')
 
 ### Another method to low/high-pass an image.
 
-![dct](images/dct.jpg)
+![dct](images/DCT.jpg)
 
 ```
 img_processed = np.copy(img_ds)
