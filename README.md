@@ -11,7 +11,7 @@
 
 I started this project to process photos taken for my gunplas, originally. A bunch of methods are employed, and most of them are self-taught products.
 
-Following are some funciton I used:
+Following are some methods I used:
 
 ## pooling(image, shrinkage)
 ![pooling](images/pooling.jpg)
@@ -61,3 +61,21 @@ cv2.destroyAllWindows()
 ```
 
 ![passed](images/passed.jpg)
+
+## histogram(image, channel_order='RGB', bins=50)
+```
+histogram(img_ds, channel_order='BGR')
+```
+![hist](images/hist.jpg)
+
+## negatives(image)
+```
+img_processed = np.copy(img_ds)
+negatives(img_processed)
+cv2.imshow('pooled', img_ds)
+cv2.imshow('processed', img_processed)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
+
+![negative](images/negative.jpg)
