@@ -151,9 +151,8 @@ def median_filter(image, window_size=3, step_size=1):
             idx_h += step_size
     image[:, :, :] = image_new[:, :, :]
 
-def contrast(image, value_contrast=1, value_bright=0, mode='simple', step_threshold=0.5):
-    if mode == 'simple':
-        value_contrast = 1 + value_contrast/10
+def contrast(image, value_contrast=1, value_bright=0, mode='linear', step_threshold=0.5):
+    if mode == 'linear':
         for h_idx in range(image.shape[0]):
             for w_idx in range(image.shape[1]):
                 for c_idx in range(image.shape[2]):
@@ -163,7 +162,13 @@ def contrast(image, value_contrast=1, value_bright=0, mode='simple', step_thresh
         for h_idx in range(image.shape[0]):
             for w_idx in range(image.shape[1]):
                 for c_idx in range(image.shape[2]):
-                    image[h_idx, w_idx, c_idx] = np.clip(1 / (1 + np.exp(-1*value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold))), 0, 1)
+                    image[h_idx, w_idx, c_idx] = np.clip(1 / (1 + np.exp(-1*value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold))) + value_bright, 0, 1)
+    
+    elif mode == 'cubic':
+        for h_idx in range(image.shape[0]):
+            for w_idx in range(image.shape[1]):
+                for c_idx in range(image.shape[2]):
+                    image[h_idx, w_idx, c_idx] = np.clip(value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold)**3 + 0.5 + value_bright, 0, 1)
         
 
 def gaussian_filter(image, sigma=1, radius=1, derivative=0):
@@ -202,20 +207,20 @@ if __name__ == '__main__':
     # img_ds = np.concatenate((img_ds, img_ds, img_ds), axis=2)
     
     img_processed = np.copy(img_ds)
-    img_noised = np.copy(img_ds)
+    # img_noised = np.copy(img_ds)
     
     # DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
     # pass_filter(img_processed, span=0.9, pass_type='high')
     # salt_pepper(img_noised)
     # img_processed = np.copy(img_noised)
     # edge_detect_laplace(img_processed, direction='45_degree')
-    # contrast(img_processed, mode='sigmoid', value_contrast=20, step_threshold=0.3)
+    contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
     # gaussian_filter(img_processed, sigma=7, radius=1, derivative=0)
     # log_transform(img_processed, c=2)
-    median_filter(img_processed, window_size=3, step_size=1)
+    # median_filter(img_processed, window_size=3, step_size=1)
      
     # negatives(img_processed)
-    # histogram(img_processed, channel_order='BGR')    
+    histogram(img_processed, channel_order='BGR')    
     
     # img_mixed = np.clip(img_ds - img_processed, 0, 1)
     
