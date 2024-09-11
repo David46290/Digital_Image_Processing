@@ -148,3 +148,21 @@ cv2.destroyAllWindows()
 ```
 
 ![medianed](images/medianed.jpg)
+
+## contrast(image, value_contrast, value_bright, mode, step_threshold)
+
+![contrast](images/contrast.jpg)
+![contrast_eq](images/contrast_eq.jpg)
+
+```
+img_processed = np.copy(img_ds)
+contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
+histogram(img_processed, channel_order='BGR') 
+cv2.imshow('pooled', img_ds)
+cv2.imshow('processed', img_processed)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
+
+![contrasted](images/contrasted.jpg)
+![hist_contrasted](images/hist_contrast.jpg)
