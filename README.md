@@ -167,12 +167,12 @@ cv2.destroyAllWindows()
 ![contrasted](images/contrasted.jpg)
 ![hist_contrasted](images/hist_contrast.jpg)
 
-## gaussian_filter(image, sigma, radius, derivative)
+## gaussian_filter(image, sigma, radius)
 ([Reference](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter.html "link" )) 
 
 ```
 img_processed = np.copy(img_ds)
-gaussian_filter(img_processed, sigma=7, radius=1, derivative=0)
+gaussian_filter(img_processed, sigma=7, radius=1)
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
