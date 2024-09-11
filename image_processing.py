@@ -121,7 +121,7 @@ def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate
             image_dct[threshold_h:image.shape[0], :threshold_w, :] = 0
         if '4' not in pass_quadrant:
             image_dct[threshold_h:, threshold_w:, :] = 0
-    image[:, :, :] = np.clip(sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm), 0, 1)
+    image[:, :, :] = np.clip(sfft.idctn(image_dct, type=2, shape=image.shape, norm=norm), 0, 1)
 
 def edge_detect_laplace(image, direction='vert_hori'):
     if direction == 'vert_hori':
