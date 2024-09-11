@@ -121,7 +121,7 @@ def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate
             image_dct[threshold_h:image.shape[0], :threshold_w, :] = 0
         if '4' not in pass_quadrant:
             image_dct[threshold_h:, threshold_w:, :] = 0
-    image[:, :, :] = sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm)
+    image[:, :, :] = np.clip(sfft.idctn(image_dct, type=2, shape=shape_result, norm=norm), 0, 1)
 
 def edge_detect_laplace(image, direction='vert_hori'):
     if direction == 'vert_hori':
@@ -147,11 +147,6 @@ def median_filter(image, window_size=3, step_size=1):
                 image_new[idx_h, idx_w, idx_c] = np.median(np.ravel(image[window_border_h[0]:window_border_h[1],
                                                                       window_border_w[0]:window_border_w[1],
                                                                       idx_c]))
-                # print(np.median(np.ravel(image[window_border_h[0]:window_border_h[1],
-                #                                                       window_border_w[0]:window_border_w[1],
-                #                                                       idx_c])))
-                # test = image[window_border_h[0]:window_border_h[1],window_border_w[0]:window_border_w[1],
-                #              idx_c]
                 idx_w += step_size
             idx_h += step_size
     image[:, :, :] = image_new[:, :, :]
@@ -175,11 +170,20 @@ def gaussian_filter(image, sigma=1, radius=1, derivative=0):
     for c_idx in range(image.shape[2]):
         image[:, :, c_idx] = np.clip(simg.gaussian_filter(image[:, :, c_idx], sigma=sigma, radius=radius, order=derivative), 0, 1)
 
+def salt_pepper(image):
+    for h_idx in range(image.shape[0]):
+        for w_idx in range(image.shape[1]):
+            for c_idx in range(image.shape[2]):
+                rng = np.random.randint(low=0, high=11)
+                if rng < 2:
+                    image[h_idx, w_idx, c_idx] = 0
+                elif rng > 7:
+                    image[h_idx, w_idx, c_idx] = 1
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
-    # img = cv2.imread('gundam_rg_2.jpg')
-    img = cv2.imread('commander_quant_hg.jpg')
+    img = cv2.imread('gundam_rg_2.jpg')
+    # img = cv2.imread('commander_quant_hg.jpg')
     
     img_ds = pooling(img, shrinkage=6)
     img = img / 255
@@ -197,23 +201,28 @@ if __name__ == '__main__':
     #                 [5, 9, 7, 2, 3, 4, 1, 0]]).reshape(6, 8, 1)
     # img_ds = np.concatenate((img_ds, img_ds, img_ds), axis=2)
     
-    img_fucked_up = np.copy(img_ds)
-    # DCT(img_fucked_up, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
-    # pass_filter(img_fucked_up, span=0.9, pass_type='high')
-    edge_detect_laplace(img_fucked_up, direction='45_degree')
-    # contrast(img_fucked_up, mode='sigmoid', value_contrast=20, step_threshold=0.3)
-    # gaussian_filter(img_fucked_up, sigma=7, radius=1, derivative=0)
-    log_transform(img_fucked_up, c=10)
-    # median_filter(img_fucked_up, window_size=3, step_size=1)
+    img_processed = np.copy(img_ds)
+    img_noised = np.copy(img_ds)
     
-    # negatives(img_fucked_up)
-    # histogram(img_fucked_up, channel_order='BGR')    
+    # DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
+    # pass_filter(img_processed, span=0.9, pass_type='high')
+    # salt_pepper(img_noised)
+    # img_processed = np.copy(img_noised)
+    # edge_detect_laplace(img_processed, direction='45_degree')
+    # contrast(img_processed, mode='sigmoid', value_contrast=20, step_threshold=0.3)
+    # gaussian_filter(img_processed, sigma=7, radius=1, derivative=0)
+    # log_transform(img_processed, c=2)
+    median_filter(img_processed, window_size=3, step_size=1)
+     
+    # negatives(img_processed)
+    # histogram(img_processed, channel_order='BGR')    
     
-    img_mixed = np.clip(img_ds - img_fucked_up, 0, 1)
+    # img_mixed = np.clip(img_ds - img_processed, 0, 1)
     
     # cv2.imshow('image',img)
-    # cv2.imshow('pooled', img_ds)
-    cv2.imshow('random bullshit', img_fucked_up)
+    cv2.imshow('pooled', img_ds)
+    # cv2.imshow('noised', img_noised)
+    cv2.imshow('processed', img_processed)
     # cv2.imshow('mixed', img_mixed)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
