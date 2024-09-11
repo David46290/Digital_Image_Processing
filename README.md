@@ -130,3 +130,21 @@ cv2.destroyAllWindows()
 ```
 
 ![laplaced](images/laplaced.jpg)
+
+
+## median_filter(image, window_size, step_size)
+
+![median](images/median.jpg)
+
+```
+img_noised = np.copy(img_ds)
+salt_pepper(img_noised)
+img_processed = np.copy(img_noised)
+median_filter(img_processed, window_size=3, step_size=1)
+cv2.imshow('noised', img_noised)
+cv2.imshow('processed', img_processed)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+```
+
+![medianed](images/medianed.jpg)
