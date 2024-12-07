@@ -5,7 +5,7 @@ import scipy.ndimage as simg
 import numpy as np
 from scipy import signal as scisig
 from matplotlib import pyplot as plt
-
+from PIL import Image
 
 def pooling(image, shrinkage):
     diemnsion = image.shape[2]
@@ -32,7 +32,12 @@ def pooling(image, shrinkage):
             idx_w_pooled = idx_w_pooled + 1
             
     return new_image            
-        
+
+def resize(image, size):
+    new_img = Image.fromarray(np.uint8(image*255))
+    new_img = new_img.resize(size, Image.BILINEAR)
+    return np.asarray(new_img) 
+
 def pass_filter(image, span=0.1, pass_type='low'):
     diemnsion = image.shape[2]
     h = image.shape[0]
@@ -189,9 +194,10 @@ if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
     img = cv2.imread('gundam_rg_2.jpg')
     # img = cv2.imread('commander_quant_hg.jpg')
+    img = img / 255
     
     img_ds = pooling(img, shrinkage=6)
-    img = img / 255
+    
     img_ds = img_ds / 255
     # histogram(img_ds, channel_order='BGR')
     # img_fft = sfft.fft2(img_ds)
