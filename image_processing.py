@@ -7,6 +7,10 @@ from scipy import signal as scisig
 from matplotlib import pyplot as plt
 from PIL import Image
 
+def min_max_normal(array_2d):
+    return (array_2d-np.amin(array_2d)) / (np.amax(array_2d) - np.amin(array_2d))
+                             
+
 def pooling(image, shrinkage):
     diemnsion = image.shape[2]
     h = image.shape[0]
@@ -37,7 +41,7 @@ def resize(image, size):
     new_img = Image.fromarray(np.uint8(image*255))
     new_img = new_img.resize(size, Image.BILINEAR)
     return np.asarray(new_img) 
-
+        
 def pass_filter(image, span=0.1, pass_type='low'):
     diemnsion = image.shape[2]
     h = image.shape[0]
@@ -102,14 +106,16 @@ def negatives(image):
     image[:, :, :] = np.clip(-1 * (image - 1), 0, 1)
 
     
-def log_transform(image, c):
+def log_transform(image, c, normalized=False):
     for c_idx in range(image.shape[2]):
-        image[:, :, c_idx] = np.clip(c * np.log(1 + image[:, :, c_idx]), 0, 1)
-
+        if not normalized:
+            image[:, :, c_idx] = np.clip(c * np.log(1 + image[:, :, c_idx]), 0, 1)
+        else:
+            image[:, :, c_idx] = min_max_normal(c * np.log(1 + image[:, :, c_idx]))
 
 def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate=0.5, pass_quadrant='1234'):
     image_dct = sfft.dctn(image, type=2, shape=shape_result, norm=norm)
-    
+    changed_value = -10
     if process_type == 'random':
         # randomly edit element and see what can be changed
         image_dct = image_dct * np.random.rand(image.shape[0], image.shape[1], image.shape[2])
@@ -119,14 +125,37 @@ def DCT(image, shape_result=None, norm='ortho', process_type='random', pass_rate
         threshold_h = int(image.shape[0] * pass_rate)
         threshold_w = int(image.shape[1] * pass_rate)
         if '1' not in pass_quadrant:
-            image_dct[:threshold_h, :threshold_w, :] = 0
+            image_dct[:threshold_h, :threshold_w, :] = changed_value
         if '2' not in pass_quadrant:
-            image_dct[:threshold_h, threshold_w:image.shape[1], :] = 0
+            image_dct[:threshold_h, threshold_w:image.shape[1], :] = changed_value
         if '3' not in pass_quadrant:
-            image_dct[threshold_h:image.shape[0], :threshold_w, :] = 0
+            image_dct[threshold_h:image.shape[0], :threshold_w, :] = changed_value
         if '4' not in pass_quadrant:
-            image_dct[threshold_h:, threshold_w:, :] = 0
+            image_dct[threshold_h:, threshold_w:, :] = changed_value
     image[:, :, :] = np.clip(sfft.idctn(image_dct, type=2, shape=image.shape, norm=norm), 0, 1)
+
+def DCT_compress(image, norm='ortho', shrinkage=0.5):
+    pixel_skip_rate = int(1 // shrinkage)
+    new_h = int(image.shape[0] * shrinkage)
+    new_w = int(image.shape[1] * shrinkage)
+    image_dct = sfft.dctn(image, type=2, norm=norm)
+    new_dct = np.zeros((new_h, new_w, image.shape[2]))
+    for idx_c in range(image_dct.shape[2]):
+        idx_h = 0
+        idx_new_h = 0
+        while idx_new_h < new_h:
+            idx_w = 0
+            idx_new_w = 0
+            while idx_new_w < new_w:
+                if (idx_h % pixel_skip_rate == 0) and (idx_w % pixel_skip_rate == 0):
+                    new_dct[idx_new_h, idx_new_w, idx_c] = image_dct[idx_h, idx_w, idx_c] 
+                idx_w = idx_w + pixel_skip_rate
+                idx_new_w = idx_new_w + 1
+            idx_h = idx_h + pixel_skip_rate
+            idx_new_h = idx_new_h + 1
+                    
+    return np.clip(sfft.idctn(new_dct, type=2, norm=norm), 0, 1)
+
 
 def edge_detect_laplace(image, direction='vert_hori'):
     if direction == 'vert_hori':
@@ -192,12 +221,13 @@ def salt_pepper(image):
 
 if __name__ == '__main__':
     # img = cv2.imread('is_this_a_pigeon.jpg') 
-    img = cv2.imread('gundam_rg_2.jpg')
+    # img = cv2.imread('gundam_rg_2.jpg')
     # img = cv2.imread('commander_quant_hg.jpg')
+    img = cv2.imread('destiny.jpg')
     img = img / 255
     
-    img_ds = pooling(img, shrinkage=6)
-    
+    # img_ds = pooling(img, shrinkage=6)
+    img_ds = resize(img, (360, 640))
     img_ds = img_ds / 255
     # histogram(img_ds, channel_order='BGR')
     # img_fft = sfft.fft2(img_ds)
@@ -213,27 +243,34 @@ if __name__ == '__main__':
     # img_ds = np.concatenate((img_ds, img_ds, img_ds), axis=2)
     
     img_processed = np.copy(img_ds)
+    img_processed2 = np.copy(img_ds)
     # img_noised = np.copy(img_ds)
     
-    # DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
+    # DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='1', pass_rate=0.1)
     # pass_filter(img_processed, span=0.9, pass_type='high')
     # salt_pepper(img_noised)
     # img_processed = np.copy(img_noised)
     # edge_detect_laplace(img_processed, direction='45_degree')
+    log_transform(img_processed, c=5)
+    log_transform(img_processed2, c=5, normalized=True)
     # contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
-    gaussian_filter(img_processed, sigma=7, radius=1)
-    # log_transform(img_processed, c=2)
+    # gaussian_filter(img_processed, sigma=7, radius=1)
+    
     # median_filter(img_processed, window_size=3, step_size=1)
-     
     # negatives(img_processed)
     # histogram(img_processed, channel_order='BGR')    
     
     # img_mixed = np.clip(img_ds - img_processed, 0, 1)
     
+    # img_compressed = DCT_compress(img_ds, shrinkage=0.5)
+    
     # cv2.imshow('image',img)
     cv2.imshow('pooled', img_ds)
     # cv2.imshow('noised', img_noised)
     cv2.imshow('processed', img_processed)
+    cv2.imshow('processed2', img_processed2)
+    cv2.imshow('pooled - processed2', (img_processed2 - img_ds))
+    # cv2.imshow('compressed', img_compressed)
     # cv2.imshow('mixed', img_mixed)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
