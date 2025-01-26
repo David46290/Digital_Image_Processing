@@ -227,7 +227,8 @@ if __name__ == '__main__':
     img = img / 255
     
     # img_ds = pooling(img, shrinkage=6)
-    img_ds = resize(img, (360, 640))
+    # img_ds = resize(img, (360, 640))
+    img_ds = resize(img, [img.shape[1], img.shape[0]])
     img_ds = img_ds / 255
     # histogram(img_ds, channel_order='BGR')
     # img_fft = sfft.fft2(img_ds)
@@ -251,8 +252,8 @@ if __name__ == '__main__':
     # salt_pepper(img_noised)
     # img_processed = np.copy(img_noised)
     # edge_detect_laplace(img_processed, direction='45_degree')
-    log_transform(img_processed, c=5)
-    log_transform(img_processed2, c=5, normalized=True)
+    log_transform(img_processed, c=2)
+    log_transform(img_processed2, c=20, normalized=True)
     # contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
     # gaussian_filter(img_processed, sigma=7, radius=1)
     
@@ -265,15 +266,17 @@ if __name__ == '__main__':
     # img_compressed = DCT_compress(img_ds, shrinkage=0.5)
     
     # cv2.imshow('image',img)
-    cv2.imshow('pooled', img_ds)
+    # cv2.imshow('pooled', img_ds)
     # cv2.imshow('noised', img_noised)
-    cv2.imshow('processed', img_processed)
-    cv2.imshow('processed2', img_processed2)
-    cv2.imshow('pooled - processed2', (img_processed2 - img_ds))
+    # cv2.imshow('processed', img_processed)
+    # cv2.imshow('processed2', img_processed2)
+    # cv2.imshow('pooled - processed2', (img_processed2 - img_ds))
     # cv2.imshow('compressed', img_compressed)
     # cv2.imshow('mixed', img_mixed)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    cv2.imwrite('.//destiny_log_c2.jpg', img_processed*255)
+    cv2.imwrite('.//destiny_log&norm_c20.jpg', img_processed2*255)
 
     
     
