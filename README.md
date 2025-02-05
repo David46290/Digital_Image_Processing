@@ -47,6 +47,9 @@ Make sure scale your image's pixel values to [0, 1] before using functions below
 * If pass_type = 'low', then low-frequency components (outer area) are kept.
 * If pass_type = 'high', then high-frequency components (inner area) are kept.
 
+The spectrum of FFT from scipy has a default setting, making zero-frequency component located at the corner of the spectrum. So that's why the figure below shows the high-frequency region at the center of the spectrum.
+([See notes of scipy.fft.fft2 for more details](https://docs.scipy.org/doc/scipy/reference/generated/scipy.fft.fft2.html#scipy.fft.fft2 "link" )) 
+
 ![pass](images/pass_filter.jpg)
 
 ```
