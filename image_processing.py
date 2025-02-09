@@ -52,6 +52,7 @@ def pass_filter(image, span=0.1, pass_type='low'):
        
     
     image_fft = sfft.fft2(image) # 0 freqeucny component locates at to-left corner
+    np.fft.fftshift(image_fft)
     threshold_h = [int(h_center-(0.5*h)*(span)), int(h_center+(0.5*h)*(span))]
     threshold_w = [int(w_center-(0.5*w)*(span)), int(w_center+(0.5*w)*(span))]
     
@@ -205,9 +206,9 @@ def contrast(image, value_contrast=1, value_bright=0, mode='linear', step_thresh
                     image[h_idx, w_idx, c_idx] = np.clip(value_contrast * (image[h_idx, w_idx, c_idx]-step_threshold)**3 + 0.5 + value_bright, 0, 1)
         
 
-def gaussian_filter(image, sigma=1, radius=1):
+def gaussian_filter(image, sigma=1, radius=1, order=0):
     for c_idx in range(image.shape[2]):
-        image[:, :, c_idx] = np.clip(simg.gaussian_filter(image[:, :, c_idx], sigma=sigma, radius=radius), 0, 1)
+        image[:, :, c_idx] = np.clip(simg.gaussian_filter(image[:, :, c_idx], sigma=sigma, radius=radius, order=order), 0, 1)
 
 def salt_pepper(image):
     for h_idx in range(image.shape[0]):
@@ -219,64 +220,8 @@ def salt_pepper(image):
                 elif rng > 7:
                     image[h_idx, w_idx, c_idx] = 1
 
-if __name__ == '__main__':
-    # img = cv2.imread('is_this_a_pigeon.jpg') 
-    # img = cv2.imread('gundam_rg_2.jpg')
-    # img = cv2.imread('commander_quant_hg.jpg')
-    img = cv2.imread('destiny.jpg')
-    img = img / 255
-    
-    # img_ds = pooling(img, shrinkage=6)
-    # img_ds = resize(img, (360, 640))
-    img_ds = resize(img, [img.shape[1], img.shape[0]])
-    img_ds = img_ds / 255
-    # histogram(img_ds, channel_order='BGR')
-    # img_fft = sfft.fft2(img_ds)
-    # img_fft_2, img_filtered = pass_filter(img_ds, span=0.9, pass_type='low')
-    # img_filtered2 = fft_kernel_conv(img_ds, std=3)
-    
-    # img_ds = np.array([[0, 1, 2, 3, 4, 5, 6, 7],
-    #                 [7, 6, 5, 4, 3, 2, 1, 1],
-    #                 [5, 9, 7, 2, 3, 4, 1, 0],
-    #                 [1, 3, 5, 7, 9, 7, 5, 3],
-    #                 [1, 1, 8, 1, 8, 2, 3, 4],
-    #                 [5, 9, 7, 2, 3, 4, 1, 0]]).reshape(6, 8, 1)
-    # img_ds = np.concatenate((img_ds, img_ds, img_ds), axis=2)
-    
-    img_processed = np.copy(img_ds)
-    img_processed2 = np.copy(img_ds)
-    # img_noised = np.copy(img_ds)
-    
-    # DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='1', pass_rate=0.1)
-    # pass_filter(img_processed, span=0.9, pass_type='high')
-    # salt_pepper(img_noised)
-    # img_processed = np.copy(img_noised)
-    # edge_detect_laplace(img_processed, direction='45_degree')
-    log_transform(img_processed, c=2)
-    log_transform(img_processed2, c=20, normalized=True)
-    # contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
-    # gaussian_filter(img_processed, sigma=7, radius=1)
-    
-    # median_filter(img_processed, window_size=3, step_size=1)
-    # negatives(img_processed)
-    # histogram(img_processed, channel_order='BGR')    
-    
-    # img_mixed = np.clip(img_ds - img_processed, 0, 1)
-    
-    # img_compressed = DCT_compress(img_ds, shrinkage=0.5)
-    
-    # cv2.imshow('image',img)
-    # cv2.imshow('pooled', img_ds)
-    # cv2.imshow('noised', img_noised)
-    # cv2.imshow('processed', img_processed)
-    # cv2.imshow('processed2', img_processed2)
-    # cv2.imshow('pooled - processed2', (img_processed2 - img_ds))
-    # cv2.imshow('compressed', img_compressed)
-    # cv2.imshow('mixed', img_mixed)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    cv2.imwrite('.//destiny_log_c2.jpg', img_processed*255)
-    cv2.imwrite('.//destiny_log&norm_c20.jpg', img_processed2*255)
+
+
 
     
     
