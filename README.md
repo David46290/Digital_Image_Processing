@@ -22,10 +22,11 @@ import random
 import scipy.fftpack as sfft
 import scipy.ndimage as simg
 import numpy as np
+import image_processing as imgp
 from scipy import signal as scisig
 
 img = cv2.imread('is_this_a_pigeon.jpg') 
-img_ds = pooling(img, shrinkage=6)
+img_ds = imgp.pooling(img, shrinkage=6)
 cv2.imshow('image',img)
 cv2.imshow('pooled', img_ds)
 cv2.waitKey(0)
@@ -47,15 +48,16 @@ Make sure scale your image's pixel values to [0, 1] before using functions below
 * If pass_type = 'low', then low-frequency components (inner area) are kept.
 * If pass_type = 'high', then high-frequency components (outer area) are kept.
 
+
 ![pass](images/pass_filter.jpg)
 
 ```
 img = cv2.imread('gundam_rg_2.jpg')
-img_ds = pooling(img, shrinkage=6)
+img_ds = imgp.pooling(img, shrinkage=6)
 img = img / 255
 img_ds = img_ds / 255
 img_processed = np.copy(img_ds)
-pass_filter(img_processed, span=0.9, pass_type='high')
+imgp.pass_filter(img_processed, span=0.9, pass_type='high')
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
@@ -66,14 +68,14 @@ cv2.destroyAllWindows()
 
 ## histogram(image, channel_order)
 ```
-histogram(img_ds, channel_order='BGR')
+imgp.histogram(img_ds, channel_order='BGR')
 ```
 ![hist](images/hist.jpg)
 
 ## negatives(image)
 ```
 img_processed = np.copy(img_ds)
-negatives(img_processed)
+imgp.negatives(img_processed)
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
@@ -86,12 +88,12 @@ cv2.destroyAllWindows()
 ### new_image(x, y) = c * log(1 + image(x, y))
 ```
 img_processed = np.copy(img_ds)
-log_transform(img_processed, c=2)
+imgp.log_transform(img_processed, c=2)
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-histogram(img_ds, channel_order='BGR')
+imgp.histogram(img_ds, channel_order='BGR')
 ```
 ![log](images/log.jpg)
 ![hist_log](images/hist_log.jpg)
@@ -107,7 +109,7 @@ histogram(img_ds, channel_order='BGR')
 
 ```
 img_processed = np.copy(img_ds)
-DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
+imgp.DCT(img_processed, shape_result=None, norm='ortho', process_type='pass', pass_quadrant='234', pass_rate=0.1)
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
@@ -122,7 +124,7 @@ cv2.destroyAllWindows()
 
 ```
 img_processed = np.copy(img_ds)
-edge_detect_laplace(img_processed, direction='45_degree')
+imgp.edge_detect_laplace(img_processed, direction='45_degree')
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
@@ -138,9 +140,9 @@ cv2.destroyAllWindows()
 
 ```
 img_noised = np.copy(img_ds)
-salt_pepper(img_noised)
+imgp.salt_pepper(img_noised)
 img_processed = np.copy(img_noised)
-median_filter(img_processed, window_size=3, step_size=1)
+imgp.median_filter(img_processed, window_size=3, step_size=1)
 cv2.imshow('noised', img_noised)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
@@ -156,8 +158,8 @@ cv2.destroyAllWindows()
 
 ```
 img_processed = np.copy(img_ds)
-contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
-histogram(img_processed, channel_order='BGR') 
+imgp.contrast(img_processed, mode='sigmoid', value_contrast=10, step_threshold=0.5)
+imgp.histogram(img_processed, channel_order='BGR') 
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
@@ -172,7 +174,7 @@ cv2.destroyAllWindows()
 
 ```
 img_processed = np.copy(img_ds)
-gaussian_filter(img_processed, sigma=7, radius=1)
+imgp.gaussian_filter(img_processed, sigma=7, radius=1)
 cv2.imshow('pooled', img_ds)
 cv2.imshow('processed', img_processed)
 cv2.waitKey(0)
